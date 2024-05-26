@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="ARP/CAM CSV Converter"
+    />
+    <title>ARP/CAM CSV Converter</title>
+  </head>
+  <body>
+        <div style="display: flex; flex-direction: column">
+            <p>Upload ARP output:</p>
+            <input type="file" id="uploadArp" name="uploadArp" accept=".txt" />
+            <p>Upload CAM output:</p>
+            <input type="file" id="uploadCam" name="uploadCam" accept=".txt" />
+        </div>
+        <script type="text/javascript" src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+        <script>
+            const uploadArp = document.getElementById("uploadArp");
+            const uploadCam = document.getElementById("uploadCam");
+            function download(filename, text) {
+                var pom = document.createElement('a');
+                pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                pom.setAttribute('download', filename);
+
+                if (document.createEvent) {
+                    var event = document.createEvent('MouseEvents');
+                    event.initEvent('click', true, true);
+                    pom.dispatchEvent(event);
+                }
+                else {
+                    pom.click();
+                }
+            }
+            function convertCam(s) {
+                const lines = s.split("\n");
+                const device = lines[0].split("@")[1].split(">")[0];
+                return lines
+                    .map(x => x.trim().split(/\s+/))
+                    .filter(x => x.length == 7)
+                    .slice(1)
+                    .map(x => ({
+                        "Device": device,
+                        "Vlan": x[0],
+                        "MAC": x[1],
+                        "Vendor": "",
+                        "Interface": x[4],
+                        "IP address": "",
+                        "Device name": "",
+                    }));
+            }
+            function convertArp(s) {
+                const lines = s.split("\n");
+                const device = lines[0].split("@")[1].split(">")[0];
+                return lines
+                    .map(x => x.trim().split(/\s+/))
+                    .filter(x => x.length == 6)
+                    .slice(1)
+                    .map(x => ({
+                        "Device": device,
+                        "Address": x[1],
+                        "Device Name": x[2],
+                        "Hardware": x[0],
+                        "Vendor": "",
+                        "Interface": x[3] + " " + x[4],
+                    }));
+            }
+            uploadArp.addEventListener("change", async e => {
+                const f = e.target.files[0];
+                const text = await f.text()
+                const res = Papa.unparse(convertArp(text));
+                const name = f.name + ".csv";
+                download(name, res);
+            });
+            uploadCam.addEventListener("change", async e => {
+                const f = e.target.files[0];
+                const text = await f.text()
+                const res = Papa.unparse(convertCam(text));
+                const name = f.name + ".csv";
+                download(name, res);
+            });
+        </script>
+
+  </body>
+</html>
