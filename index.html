@@ -72,14 +72,16 @@
                 const f = e.target.files[0];
                 const text = await f.text()
                 const res = Papa.unparse(convertArp(text));
-                const name = f.name + ".csv";
+                const now = (new Date()).toLocaleString("it-IT").replaceAll(/[,\/: ]/g, "_");
+                const name = f.name + now + ".csv";
                 download(name, res);
             });
             uploadCam.addEventListener("change", async e => {
                 const f = e.target.files[0];
                 const text = await f.text()
                 const res = Papa.unparse(convertCam(text));
-                const name = f.name + ".csv";
+                const now = (new Date()).toLocaleString("it-IT").replaceAll(/[,\/: ]/g, "_");
+                const name = f.name + now + ".csv";
                 download(name, res);
             });
         </script>
